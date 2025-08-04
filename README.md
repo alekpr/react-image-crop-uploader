@@ -99,6 +99,36 @@ function App() {
 }
 ```
 
+### Upload Button Features
+
+The component automatically shows an upload button when files are present. You can customize the upload button behavior:
+
+```tsx
+import { ImageUploader } from '@alekpr/react-image-crop-uploader';
+import '@alekpr/react-image-crop-uploader/style.css';
+
+function App() {
+  return (
+    <ImageUploader
+      uploadUrl="/api/images/upload"
+      enableCrop={true}
+      // Upload button configuration
+      showUploadButton={true}           // Show/hide upload button (default: true)
+      uploadButtonText="Send Files"     // Custom button text (default: "Upload")
+      uploadButtonClassName="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
+      onUploadComplete={(response) => console.log('Upload completed:', response)}
+    />
+  );
+}
+```
+
+**Upload Button Features:**
+- ✅ **Auto-display**: Shows automatically when files are present and `uploadUrl` is provided
+- ✅ **File count**: Displays file count for multiple files (e.g., "Upload (3 files)")
+- ✅ **Customizable**: Support custom text and CSS styling
+- ✅ **Smart disable**: Automatically disabled when no files are present
+- ✅ **Hide option**: Can be hidden with `showUploadButton={false}` for manual upload handling
+
 ### Direct Upload Mode
 
 ```tsx
@@ -247,7 +277,9 @@ function App() {
 | `className` | `string` | `''` | Custom CSS class |
 | `showEditButton` | `boolean` | `true` | Show edit button on previews |
 | `editButtonText` | `string` | `'Edit'` | Text for edit button |
-| `showUploadButton` | `boolean` | `true` | Show upload button when files are present |
+| `showUploadButton` | `boolean` | `true` | Show upload button when files are present and uploadUrl is provided |
+| `uploadButtonText` | `string` | `'Upload'` | Text for upload button. Shows file count for multiple files |
+| `uploadButtonClassName` | `string` | `''` | Custom CSS class for upload button. Falls back to default styling if empty |
 | `uploadButtonText` | `string` | `'Upload'` | Text for upload button |
 | `uploadButtonClassName` | `string` | `''` | Custom CSS class for upload button |
 
@@ -260,6 +292,53 @@ function App() {
 | `cropModalProps.saveButtonText` | `string` | `'Save'` | Save button text |
 | `cropModalProps.cancelButtonText` | `string` | `'Cancel'` | Cancel button text |
 | `cropModalProps.resetButtonText` | `string` | `'Reset'` | Reset button text |
+
+## Upload Button Behavior
+
+The upload button is intelligently managed by the component:
+
+### When Upload Button Shows
+- ✅ Files are present (`files.length > 0`)
+- ✅ Upload URL is provided (`uploadUrl` prop)
+- ✅ Upload button is not hidden (`showUploadButton={true}`)
+
+### Upload Button Features
+- **File Count Display**: For multiple files, shows count (e.g., "Upload (3 files)")
+- **Auto Disable**: Automatically disabled when no files are present
+- **Custom Styling**: Use `uploadButtonClassName` for custom CSS classes
+- **Fallback Styling**: Uses default blue styling when `uploadButtonClassName` is empty
+- **Manual Control**: Set `showUploadButton={false}` to handle uploads programmatically
+
+### Upload Button Examples
+
+```tsx
+// Default upload button
+<ImageUploader uploadUrl="/api/upload" />
+
+// Custom text
+<ImageUploader 
+  uploadUrl="/api/upload" 
+  uploadButtonText="Send to Server" 
+/>
+
+// Custom styling
+<ImageUploader 
+  uploadUrl="/api/upload" 
+  uploadButtonClassName="btn btn-primary" 
+/>
+
+// Hidden upload button (manual upload)
+<ImageUploader 
+  uploadUrl="/api/upload" 
+  showUploadButton={false}
+  onFilesChange={(files) => {
+    // Handle upload manually
+    if (files.length > 0) {
+      // Your custom upload logic
+    }
+  }}
+/>
+```
 
 ## Styling
 
