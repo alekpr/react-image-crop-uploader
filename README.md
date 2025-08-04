@@ -251,7 +251,7 @@ This library uses [react-easy-crop](https://github.com/ricardo-ch/react-easy-cro
 
 ## License
 
-MIT © [Your Name]
+MIT © [alekpr](https://github.com/alekpr)
 
 ## Support
 
