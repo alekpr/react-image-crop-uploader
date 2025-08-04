@@ -158,4 +158,39 @@ describe('ImageUploader', () => {
     // The actual upload functionality would be tested in the useImageUpload hook tests
     // Here we just verify the button renders correctly with upload URL
   });
+
+  test('properly handles blob URLs without errors', () => {
+    // Mock URL.createObjectURL and URL.revokeObjectURL
+    const mockCreateObjectURL = jest.fn(() => 'blob:mock-url');
+    const mockRevokeObjectURL = jest.fn();
+    
+    Object.defineProperty(global.URL, 'createObjectURL', {
+      value: mockCreateObjectURL,
+      writable: true
+    });
+    Object.defineProperty(global.URL, 'revokeObjectURL', {
+      value: mockRevokeObjectURL,
+      writable: true
+    });
+
+    const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+    const { unmount } = render(<ImageUploader />);
+    
+    // Simulate file upload
+    const input = screen.getByTestId('file-input');
+    Object.defineProperty(input, 'files', {
+      value: [file],
+    });
+    
+    fireEvent.change(input);
+    
+    // Verify blob URL is created
+    expect(mockCreateObjectURL).toHaveBeenCalled();
+    
+    // Unmount component to trigger cleanup
+    unmount();
+    
+    // Verify blob URL is revoked on cleanup
+    expect(mockRevokeObjectURL).toHaveBeenCalled();
+  });
 });

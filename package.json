@@ -1,6 +1,6 @@
 {
   "name": "@alekpr/react-image-crop-uploader",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A comprehensive React image upload component with modal-based cropping capabilities",
   "author": "alekpr <alek.pr@gmail.com>",
   "license": "MIT",

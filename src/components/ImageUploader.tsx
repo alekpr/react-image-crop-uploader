@@ -77,6 +77,7 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
       setFiles(initialFiles);
     } else if (initialImages.length === 0 && files.length > 0) {
       // Clear files when initialImages is reset (e.g., after upload completion)
+      // Clean up blob URLs before clearing
       files.forEach(file => {
         if (file.previewUrl.startsWith('blob:')) {
           URL.revokeObjectURL(file.previewUrl);
@@ -84,7 +85,7 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
       });
       setFiles([]);
     }
-  }, [initialImages]);
+  }, [initialImages]); // Remove files dependency to prevent infinite loops
 
   const handleFilesSelected = useCallback((selectedFiles: FileList) => {
     if (disabled) return;
@@ -171,7 +172,11 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
 
   const handleRemoveFile = useCallback((index: number) => {
     const fileToRemove = files[index];
-    URL.revokeObjectURL(fileToRemove.previewUrl);
+    
+    // Only revoke blob URLs, not external URLs
+    if (fileToRemove.previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(fileToRemove.previewUrl);
+    }
     
     const updatedFiles = files.filter((_, i) => i !== index);
     setFiles(updatedFiles);
@@ -216,12 +221,16 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
 
   // Clean up object URLs on unmount
   useEffect(() => {
+    const currentFiles = files;
     return () => {
-      files.forEach(file => {
-        URL.revokeObjectURL(file.previewUrl);
+      // Clean up blob URLs on unmount
+      currentFiles.forEach(file => {
+        if (file.previewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(file.previewUrl);
+        }
       });
     };
-  }, [files]);
+  }, [files]); // Update cleanup when files change
 
   return (
     <div className={`image-uploader ${className}`}>
