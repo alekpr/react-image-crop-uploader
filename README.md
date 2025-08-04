@@ -114,16 +114,57 @@ function App() {
     console.error('Upload error:', error);
   };
 
+  const handleUploadProgress = (progress: number) => {
+    console.log(`Upload progress: ${progress}%`);
+  };
+
   return (
     <ImageUploader
-      uploadUrl="/api/upload"
+      uploadUrl="/api/images/upload"
       maxFileSize={10}
       enableCrop={true}
+      uploadFieldName="image"
+      multipleFileStrategy="single-request"
       onUploadComplete={handleUploadComplete}
       onError={handleError}
+      onUploadProgress={handleUploadProgress}
     />
   );
 }
+```
+
+### Multiple File Upload Strategies
+
+```tsx
+import { ImageUploader } from '@alekpr/react-image-crop-uploader';
+import '@alekpr/react-image-crop-uploader/style.css';
+
+// Strategy 1: Send all files in a single request
+function SingleRequestUpload() {
+  return (
+    <ImageUploader
+      uploadUrl="/api/images/upload-multiple"
+      maxFiles={5}
+      multipleFileStrategy="single-request"
+      uploadFieldName="images"
+      onUploadComplete={(response) => console.log('All files uploaded:', response)}
+    />
+  );
+}
+
+// Strategy 2: Send each file in separate requests
+function MultipleRequestsUpload() {
+  return (
+    <ImageUploader
+      uploadUrl="/api/images/upload"
+      maxFiles={5}
+      multipleFileStrategy="multiple-requests"
+      uploadFieldName="image"
+      onUploadComplete={(responses) => console.log('Upload responses:', responses)}
+    />
+  );
+}
+```
 ```
 
 ### Edit Mode
@@ -164,6 +205,8 @@ function App() {
 | `maxFileSize` | `number` | `5` | Maximum file size in MB |
 | `maxFiles` | `number` | `1` | Maximum number of files |
 | `acceptedTypes` | `string[]` | `['image/jpeg', 'image/png', 'image/webp']` | Accepted file types |
+| `uploadFieldName` | `string` | `'image'` | FormData field name for uploaded files |
+| `multipleFileStrategy` | `'single-request' \| 'multiple-requests'` | `'single-request'` | How to handle multiple file uploads |
 
 ### Crop Configuration
 
@@ -191,6 +234,7 @@ function App() {
 | `onCropComplete` | `(croppedFile: File, originalFile: File, index?: number) => void` | Called when cropping completes |
 | `onCropModalOpen` | `(file: File, index?: number) => void` | Called when crop modal opens |
 | `onCropModalClose` | `() => void` | Called when crop modal closes |
+| `onUploadProgress` | `(progress: number) => void` | Called with upload progress (0-100) |
 
 ### UI Configuration
 

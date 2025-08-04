@@ -66,4 +66,81 @@ describe('useImageUpload', () => {
     const formData = (global.fetch as jest.Mock).mock.calls[0][1].body;
     expect(formData).toBeInstanceOf(FormData);
   });
+
+  test('should use custom field name for upload', async () => {
+    const mockResponse = { success: true, id: '123' };
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValueOnce(mockResponse),
+    });
+
+    const { result } = renderHook(() => useImageUpload());
+    
+    const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+    const uploadUrl = '/api/upload';
+    
+    await act(async () => {
+      await result.current.uploadFiles([file], uploadUrl, {
+        fieldName: 'customFile'
+      });
+    });
+    
+    expect(global.fetch).toHaveBeenCalledWith(uploadUrl, {
+      method: 'POST',
+      body: expect.any(FormData),
+    });
+  });
+
+  test('should handle multiple-requests strategy', async () => {
+    const mockResponse1 = { success: true, id: '123' };
+    const mockResponse2 = { success: true, id: '456' };
+    
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockResponse1),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockResponse2),
+      });
+
+    const { result } = renderHook(() => useImageUpload());
+    
+    const file1 = new File(['test1'], 'test1.jpg', { type: 'image/jpeg' });
+    const file2 = new File(['test2'], 'test2.jpg', { type: 'image/jpeg' });
+    const uploadUrl = '/api/upload';
+    
+    let uploadResult;
+    await act(async () => {
+      uploadResult = await result.current.uploadFiles([file1, file2], uploadUrl, {
+        multipleFileStrategy: 'multiple-requests'
+      });
+    });
+    
+    expect(uploadResult).toEqual([mockResponse1, mockResponse2]);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  test('should call progress callback', async () => {
+    const mockResponse = { success: true, id: '123' };
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValueOnce(mockResponse),
+    });
+
+    const { result } = renderHook(() => useImageUpload());
+    
+    const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+    const uploadUrl = '/api/upload';
+    const onProgress = jest.fn();
+    
+    await act(async () => {
+      await result.current.uploadFiles([file], uploadUrl, {
+        onProgress
+      });
+    });
+    
+    expect(onProgress).toHaveBeenCalledWith(100);
+  });
 });

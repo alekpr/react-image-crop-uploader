@@ -11,6 +11,8 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
   maxFileSize = 5,
   maxFiles = 1,
   acceptedTypes = ['image/jpeg', 'image/png', 'image/webp'],
+  uploadFieldName = 'image',
+  multipleFileStrategy = 'single-request',
   cropAspectRatio = 'free',
   cropSize,
   enableCrop = false,
@@ -23,6 +25,7 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
   onCropComplete,
   onCropModalOpen,
   onCropModalClose,
+  onUploadProgress,
   placeholder = 'Drag & drop images here or click to select',
   disabled = false,
   className = '',
@@ -179,13 +182,18 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
     try {
       const response = await uploadFiles(
         files.map(f => f.file),
-        uploadUrl
+        uploadUrl,
+        {
+          fieldName: uploadFieldName,
+          multipleFileStrategy,
+          onProgress: onUploadProgress,
+        }
       );
       onUploadComplete?.(response);
     } catch (error) {
       onError?.(error instanceof Error ? error.message : 'Upload failed');
     }
-  }, [uploadUrl, files, uploadFiles, onUploadComplete, onError]);
+  }, [uploadUrl, files, uploadFiles, uploadFieldName, multipleFileStrategy, onUploadProgress, onUploadComplete, onError]);
 
   // Clean up object URLs on unmount
   useEffect(() => {

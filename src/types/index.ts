@@ -4,6 +4,8 @@ export interface ImageUploadProps {
   maxFileSize?: number; // in MB
   maxFiles?: number;
   acceptedTypes?: string[];
+  uploadFieldName?: string; // Field name for FormData (default: 'image')
+  multipleFileStrategy?: 'single-request' | 'multiple-requests'; // How to handle multiple files
   
   // Crop Configuration
   cropAspectRatio?: number | 'free';
@@ -22,6 +24,7 @@ export interface ImageUploadProps {
   onCropComplete?: (croppedFile: File, originalFile: File, index?: number) => void;
   onCropModalOpen?: (file: File, index?: number) => void;
   onCropModalClose?: () => void;
+  onUploadProgress?: (progress: number) => void;
   
   // UI Configuration
   placeholder?: string;
