@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Husky
+.husky/_
+
+# Coverage
+coverage/
+
+# Environment files
+.env*
+
+# Temporary files
+*.tmp
+*.temp
+
+# AI documentation and prompts
+__AI__/
