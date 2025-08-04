@@ -35,7 +35,7 @@ yarn add @alekpr/react-image-crop-uploader
 
 ```tsx
 import { ImageUploader } from '@alekpr/react-image-crop-uploader';
-import '@alekpr/react-image-crop-uploader/dist/style.css';
+import '@alekpr/react-image-crop-uploader/style.css';
 
 function App() {
   return (
@@ -54,7 +54,7 @@ function App() {
 
 ```tsx
 import { ImageUploader } from '@alekpr/react-image-crop-uploader';
-import '@alekpr/react-image-crop-uploader/dist/style.css';
+import '@alekpr/react-image-crop-uploader/style.css';
 
 function App() {
   const handleFilesChange = (files: File[]) => {
@@ -75,7 +75,7 @@ function App() {
 
 ```tsx
 import { ImageUploader } from '@alekpr/react-image-crop-uploader';
-import '@alekpr/react-image-crop-uploader/dist/style.css';
+import '@alekpr/react-image-crop-uploader/style.css';
 
 function App() {
   const handleFilesChange = (files: File[]) => {
@@ -103,7 +103,7 @@ function App() {
 
 ```tsx
 import { ImageUploader } from '@alekpr/react-image-crop-uploader';
-import '@alekpr/react-image-crop-uploader/dist/style.css';
+import '@alekpr/react-image-crop-uploader/style.css';
 
 function App() {
   const handleUploadComplete = (response: any) => {
@@ -130,7 +130,7 @@ function App() {
 
 ```tsx
 import { ImageUploader } from '@alekpr/react-image-crop-uploader';
-import '@alekpr/react-image-crop-uploader/dist/style.css';
+import '@alekpr/react-image-crop-uploader/style.css';
 
 function App() {
   const initialImages = [
@@ -217,13 +217,19 @@ function App() {
 The component comes with default styling. You can customize the appearance by importing the CSS file and overriding styles:
 
 ```tsx
-import '@alekpr/react-image-crop-uploader/dist/style.css';
+import '@alekpr/react-image-crop-uploader/style.css';
 ```
 
 Or import the CSS in your own stylesheet:
 
 ```css
-@import '@alekpr/react-image-crop-uploader/dist/style.css';
+@import '@alekpr/react-image-crop-uploader/style.css';
+```
+
+You can also import the CSS file directly from the dist folder:
+
+```tsx
+import '@alekpr/react-image-crop-uploader/dist/react-image-crop-uploader.css';
 ```
 
 ## TypeScript Support
