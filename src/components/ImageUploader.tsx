@@ -31,6 +31,9 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
   className = '',
   showEditButton = true,
   editButtonText = 'Edit',
+  showUploadButton = true,
+  uploadButtonText = 'Upload',
+  uploadButtonClassName = '',
   cropModalProps = {
     title: 'Crop Image',
     saveButtonText: 'Save',
@@ -225,6 +228,18 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
           showEditButton={showEditButton && enableCrop}
           editButtonText={editButtonText}
         />
+      )}
+      
+      {files.length > 0 && uploadUrl && showUploadButton && (
+        <div className="mt-4">
+          <button
+            onClick={handleUpload}
+            disabled={files.length === 0}
+            className={uploadButtonClassName || "px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"}
+          >
+            {uploadButtonText} {files.length > 1 ? `(${files.length} files)` : ''}
+          </button>
+        </div>
       )}
       
       {isCropModalOpen && currentFileToCrop && (

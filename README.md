@@ -125,6 +125,8 @@ function App() {
       enableCrop={true}
       uploadFieldName="image"
       multipleFileStrategy="single-request"
+      uploadButtonText="Upload Image"
+      showUploadButton={true}
       onUploadComplete={handleUploadComplete}
       onError={handleError}
       onUploadProgress={handleUploadProgress}
@@ -245,6 +247,9 @@ function App() {
 | `className` | `string` | `''` | Custom CSS class |
 | `showEditButton` | `boolean` | `true` | Show edit button on previews |
 | `editButtonText` | `string` | `'Edit'` | Text for edit button |
+| `showUploadButton` | `boolean` | `true` | Show upload button when files are present |
+| `uploadButtonText` | `string` | `'Upload'` | Text for upload button |
+| `uploadButtonClassName` | `string` | `''` | Custom CSS class for upload button |
 
 ### Modal Configuration
 

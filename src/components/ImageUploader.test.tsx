@@ -65,4 +65,44 @@ describe('ImageUploader', () => {
       expect(mockOnCropModalOpen).toHaveBeenCalledWith(file);
     }
   });
+
+  test('shows upload button when uploadUrl is provided and files are present', () => {
+    const initialImages = ['https://example.com/image1.jpg'];
+    render(<ImageUploader uploadUrl="/api/upload" initialImages={initialImages} />);
+    
+    // Check that the upload button is rendered
+    expect(screen.getByText('Upload')).toBeInTheDocument();
+  });
+
+  test('hides upload button when showUploadButton is false', () => {
+    const initialImages = ['https://example.com/image1.jpg'];
+    render(<ImageUploader uploadUrl="/api/upload" initialImages={initialImages} showUploadButton={false} />);
+    
+    // Check that the upload button is not rendered
+    expect(screen.queryByText('Upload')).not.toBeInTheDocument();
+  });
+
+  test('shows custom upload button text', () => {
+    const initialImages = ['https://example.com/image1.jpg'];
+    render(<ImageUploader uploadUrl="/api/upload" initialImages={initialImages} uploadButtonText="Send Files" />);
+    
+    // Check that the custom text is rendered
+    expect(screen.getByText('Send Files')).toBeInTheDocument();
+  });
+
+  test('shows file count in upload button for multiple files', () => {
+    const initialImages = ['https://example.com/image1.jpg', 'https://example.com/image2.jpg'];
+    render(<ImageUploader uploadUrl="/api/upload" initialImages={initialImages} maxFiles={5} />);
+    
+    // Check that the file count is shown
+    expect(screen.getByText(/Upload.*\(2 files\)/)).toBeInTheDocument();
+  });
+
+  test('does not show upload button without uploadUrl', () => {
+    const initialImages = ['https://example.com/image1.jpg'];
+    render(<ImageUploader initialImages={initialImages} />);
+    
+    // Check that the upload button is not rendered
+    expect(screen.queryByText('Upload')).not.toBeInTheDocument();
+  });
 });

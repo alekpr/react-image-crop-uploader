@@ -32,6 +32,9 @@ export interface ImageUploadProps {
   className?: string;
   showEditButton?: boolean;
   editButtonText?: string;
+  showUploadButton?: boolean;
+  uploadButtonText?: string;
+  uploadButtonClassName?: string;
   
   // Modal Configuration
   cropModalProps?: {
