@@ -1,5 +1,9 @@
 # React Image Crop Uploader
 
+[![npm version](https://badge.fury.io/js/@alekpr%2Freact-image-crop-uploader.svg)](https://www.npmjs.com/package/@alekpr/react-image-crop-uploader)
+[![npm downloads](https://img.shields.io/npm/dm/@alekpr/react-image-crop-uploader.svg)](https://www.npmjs.com/package/@alekpr/react-image-crop-uploader)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A comprehensive React image upload component with modal-based cropping capabilities. This library provides an all-in-one solution for handling image uploads with cropping functionality in your React applications.
 
 ## Features
@@ -18,13 +22,30 @@ A comprehensive React image upload component with modal-based cropping capabilit
 ## Installation
 
 ```bash
-npm install react-image-crop-uploader
+npm install @alekpr/react-image-crop-uploader
 ```
 
 or
 
 ```bash
-yarn add react-image-crop-uploader
+yarn add @alekpr/react-image-crop-uploader
+```
+
+## Quick Start
+
+```tsx
+import { ImageUploader } from '@alekpr/react-image-crop-uploader';
+import '@alekpr/react-image-crop-uploader/dist/style.css';
+
+function App() {
+  return (
+    <ImageUploader
+      onFilesChange={(files) => console.log(files)}
+      cropEnabled={true}
+      maxFiles={5}
+    />
+  );
+}
 ```
 
 ## Usage
@@ -32,8 +53,8 @@ yarn add react-image-crop-uploader
 ### Basic Usage
 
 ```tsx
-import { ImageUploader } from 'react-image-crop-uploader';
-import 'react-image-crop-uploader/dist/style.css';
+import { ImageUploader } from '@alekpr/react-image-crop-uploader';
+import '@alekpr/react-image-crop-uploader/dist/style.css';
 
 function App() {
   const handleFilesChange = (files: File[]) => {
@@ -53,8 +74,8 @@ function App() {
 ### With Cropping Enabled
 
 ```tsx
-import { ImageUploader } from 'react-image-crop-uploader';
-import 'react-image-crop-uploader/dist/style.css';
+import { ImageUploader } from '@alekpr/react-image-crop-uploader';
+import '@alekpr/react-image-crop-uploader/dist/style.css';
 
 function App() {
   const handleFilesChange = (files: File[]) => {
@@ -81,8 +102,8 @@ function App() {
 ### Direct Upload Mode
 
 ```tsx
-import { ImageUploader } from 'react-image-crop-uploader';
-import 'react-image-crop-uploader/dist/style.css';
+import { ImageUploader } from '@alekpr/react-image-crop-uploader';
+import '@alekpr/react-image-crop-uploader/dist/style.css';
 
 function App() {
   const handleUploadComplete = (response: any) => {
@@ -108,8 +129,8 @@ function App() {
 ### Edit Mode
 
 ```tsx
-import { ImageUploader } from 'react-image-crop-uploader';
-import 'react-image-crop-uploader/dist/style.css';
+import { ImageUploader } from '@alekpr/react-image-crop-uploader';
+import '@alekpr/react-image-crop-uploader/dist/style.css';
 
 function App() {
   const initialImages = [
@@ -196,13 +217,13 @@ function App() {
 The component comes with default styling. You can customize the appearance by importing the CSS file and overriding styles:
 
 ```tsx
-import 'react-image-crop-uploader/dist/style.css';
+import '@alekpr/react-image-crop-uploader/dist/style.css';
 ```
 
 Or import the CSS in your own stylesheet:
 
 ```css
-@import 'react-image-crop-uploader/dist/style.css';
+@import '@alekpr/react-image-crop-uploader/dist/style.css';
 ```
 
 ## TypeScript Support
