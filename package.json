@@ -1,12 +1,12 @@
 {
-  "name": "react-image-crop-uploader",
+  "name": "@alekpr/react-image-crop-uploader",
   "version": "1.0.0",
   "description": "A comprehensive React image upload component with modal-based cropping capabilities",
   "author": "Your Name",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alekpr/react-image-crop-uploader.git"
+    "url": "git+https://github.com/alekpr/react-image-crop-uploader.git"
   },
   "bugs": {
     "url": "https://github.com/alekpr/react-image-crop-uploader/issues"
