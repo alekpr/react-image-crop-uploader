@@ -206,10 +206,14 @@ import { ImageUploader } from '@alekpr/react-image-crop-uploader';
 import '@alekpr/react-image-crop-uploader/style.css';
 
 function App() {
-  const initialImages = [
-    'https://example.com/image1.jpg',
-    'https://example.com/image2.jpg'
-  ];
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+
+  const handleUploadComplete = (response: any) => {
+    // Add new uploaded images to the collection
+    const newImageUrls = response.imageUrls; // Assume response contains URLs
+    setUploadedImages(prev => [...prev, ...newImageUrls]);
+    // Component will automatically clear its upload state when initialImages updates
+  };
 
   const handleFilesChange = (files: File[]) => {
     console.log('Updated files:', files);
@@ -218,14 +222,24 @@ function App() {
   return (
     <ImageUploader
       editMode={true}
-      initialImages={initialImages}
+      initialImages={uploadedImages} // Updates trigger state clearing
+      uploadUrl="/api/images/upload"
       enableCrop={true}
+      maxFiles={5} // Can add more images even in edit mode
       showEditButton={true}
       onFilesChange={handleFilesChange}
+      onUploadComplete={handleUploadComplete}
     />
   );
 }
 ```
+
+**Enhanced Edit Mode Features:**
+- ✅ **Add Images**: Can add new images even when in edit mode
+- ✅ **State Clearing**: Automatically clears upload state when `initialImages` updates
+- ✅ **Full Editing**: Crop, remove, and add images in the same interface
+- ✅ **Upload Integration**: Upload new images and see them added to the collection
+- ✅ **Dynamic Drop Zone**: Shows/hides drop zone based on file count vs maxFiles
 
 ## Props
 

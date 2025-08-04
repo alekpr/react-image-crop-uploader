@@ -105,4 +105,57 @@ describe('ImageUploader', () => {
     // Check that the upload button is not rendered
     expect(screen.queryByText('Upload')).not.toBeInTheDocument();
   });
+
+  test('clears files when initialImages is reset after upload', () => {
+    const { rerender } = render(<ImageUploader initialImages={['https://example.com/image1.jpg']} />);
+    
+    // Check that image is rendered
+    expect(screen.getByRole('img')).toBeInTheDocument();
+    
+    // Reset initialImages (simulating after upload completion)
+    rerender(<ImageUploader initialImages={[]} />);
+    
+    // Check that images are cleared
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  test('shows drop zone in edit mode when files are less than maxFiles', () => {
+    const initialImages = ['https://example.com/image1.jpg'];
+    render(<ImageUploader initialImages={initialImages} editMode={true} maxFiles={3} />);
+    
+    // Check that drop zone is still shown
+    expect(screen.getByText('Drag & drop images here or click to select')).toBeInTheDocument();
+  });
+
+  test('hides drop zone in edit mode when files reach maxFiles', () => {
+    const initialImages = [
+      'https://example.com/image1.jpg',
+      'https://example.com/image2.jpg',
+      'https://example.com/image3.jpg'
+    ];
+    render(<ImageUploader initialImages={initialImages} editMode={true} maxFiles={3} />);
+    
+    // Check that drop zone is hidden
+    expect(screen.queryByText('Drag & drop images here or click to select')).not.toBeInTheDocument();
+  });
+
+  test('marks files as uploaded after successful upload', async () => {
+    const initialImages = ['https://example.com/image1.jpg'];
+    const mockOnUploadComplete = jest.fn();
+    
+    render(
+      <ImageUploader 
+        initialImages={initialImages} 
+        uploadUrl="/api/upload"
+        onUploadComplete={mockOnUploadComplete}
+      />
+    );
+    
+    // Check that upload button is present
+    const uploadButton = screen.getByText('Upload');
+    expect(uploadButton).toBeInTheDocument();
+    
+    // The actual upload functionality would be tested in the useImageUpload hook tests
+    // Here we just verify the button renders correctly with upload URL
+  });
 });

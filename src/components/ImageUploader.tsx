@@ -52,7 +52,7 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
 
   // Initialize with initial images if provided
   useEffect(() => {
-    if (initialImages.length > 0 && files.length === 0) {
+    if (initialImages.length > 0) {
       const initialFiles: ImageFile[] = initialImages.map((image, index) => {
         if (typeof image === 'string') {
           // For URL strings, we create a placeholder file
@@ -61,7 +61,7 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
             file: new File([], `initial-${index}.jpg`, { type: 'image/jpeg' }),
             previewUrl: image,
             isCropped: false,
-            isUploaded: false,
+            isUploaded: true, // Mark initial images as uploaded
           };
         } else {
           // For File objects
@@ -75,8 +75,16 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
         }
       });
       setFiles(initialFiles);
+    } else if (initialImages.length === 0 && files.length > 0) {
+      // Clear files when initialImages is reset (e.g., after upload completion)
+      files.forEach(file => {
+        if (file.previewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(file.previewUrl);
+        }
+      });
+      setFiles([]);
     }
-  }, [initialImages, files.length]);
+  }, [initialImages]);
 
   const handleFilesSelected = useCallback((selectedFiles: FileList) => {
     if (disabled) return;
@@ -192,6 +200,14 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
           onProgress: onUploadProgress,
         }
       );
+      
+      // Mark files as uploaded
+      const updatedFiles = files.map(file => ({
+        ...file,
+        isUploaded: true,
+      }));
+      setFiles(updatedFiles);
+      
       onUploadComplete?.(response);
     } catch (error) {
       onError?.(error instanceof Error ? error.message : 'Upload failed');
@@ -209,7 +225,7 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
 
   return (
     <div className={`image-uploader ${className}`}>
-      {!editMode && (
+      {(!editMode || files.length < maxFiles) && (
         <DropZone
           ref={dropZoneRef}
           onFilesSelected={handleFilesSelected}
