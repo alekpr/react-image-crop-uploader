@@ -53,3 +53,17 @@ export const dataUrlToFile = (dataUrl: string, filename: string): File => {
   
   return new File([u8arr], filename, { type: mime });
 };
+
+/**
+ * Convert a File object to a data URL
+ * @param file The file to convert
+ * @returns A promise that resolves to the data URL
+ */
+export const fileToDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};

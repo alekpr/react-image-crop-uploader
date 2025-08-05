@@ -18,7 +18,7 @@ export interface ImageUploadProps {
   editMode?: boolean;
   
   // Callbacks
-  onUploadComplete?: (response: any) => void;
+  onUploadComplete?: (result: { unuploadedFiles: File[]; uploadResponse: any }) => void;
   onFilesChange?: (files: File[]) => void;
   onError?: (error: string) => void;
   onCropComplete?: (croppedFile: File, originalFile: File, index?: number) => void;

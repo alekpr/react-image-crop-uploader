@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
 
 interface CropModalProps {
-  file: File;
+  file?: File;
+  imageUrl?: string;
   onSave: (croppedFile: File) => void;
   onCancel: () => void;
   aspectRatio: number | 'free';
@@ -69,6 +70,7 @@ const getCroppedImg = async (imageSrc: string, pixelCrop: Area): Promise<Blob> =
 
 export const CropModal: React.FC<CropModalProps> = ({
   file,
+  imageUrl,
   onSave,
   onCancel,
   aspectRatio,
@@ -84,14 +86,20 @@ export const CropModal: React.FC<CropModalProps> = ({
   const [imageSrc, setImageSrc] = useState<string>('');
 
   useEffect(() => {
-    const objectUrl = URL.createObjectURL(file);
-    setImageSrc(objectUrl);
-    
-    // Clean up object URL
-    return () => {
-      URL.revokeObjectURL(objectUrl);
-    };
-  }, [file]);
+    if (file) {
+      // Use File object
+      const objectUrl = URL.createObjectURL(file);
+      setImageSrc(objectUrl);
+      
+      // Clean up object URL
+      return () => {
+        URL.revokeObjectURL(objectUrl);
+      };
+    } else if (imageUrl) {
+      // Use image URL directly
+      setImageSrc(imageUrl);
+    }
+  }, [file, imageUrl]);
 
   const onCropComplete = (_: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
@@ -102,8 +110,31 @@ export const CropModal: React.FC<CropModalProps> = ({
     
     try {
       const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
-      const croppedFile = new File([croppedBlob], file.name, {
-        type: file.type,
+      
+      // Determine filename and type
+      let fileName = 'cropped-image.jpg';
+      let fileType = 'image/jpeg';
+      
+      if (file) {
+        fileName = file.name;
+        fileType = file.type;
+      } else if (imageUrl) {
+        // Extract filename from URL or use default
+        const urlParts = imageUrl.split('/');
+        const lastPart = urlParts[urlParts.length - 1];
+        if (lastPart && lastPart.includes('.')) {
+          fileName = lastPart.split('?')[0]; // Remove query params
+        }
+        // Determine type from URL extension or use default
+        if (fileName.toLowerCase().includes('.png')) {
+          fileType = 'image/png';
+        } else if (fileName.toLowerCase().includes('.webp')) {
+          fileType = 'image/webp';
+        }
+      }
+      
+      const croppedFile = new File([croppedBlob], fileName, {
+        type: fileType,
         lastModified: Date.now(),
       });
       onSave(croppedFile);

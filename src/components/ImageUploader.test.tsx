@@ -94,8 +94,9 @@ describe('ImageUploader', () => {
     const initialImages = ['https://example.com/image1.jpg', 'https://example.com/image2.jpg'];
     render(<ImageUploader uploadUrl="/api/upload" initialImages={initialImages} maxFiles={5} />);
     
-    // Check that the file count is shown
-    expect(screen.getByText(/Upload.*\(2 files\)/)).toBeInTheDocument();
+    // Check that the file count is shown in separate span elements
+    expect(screen.getByText('Upload')).toBeInTheDocument();
+    expect(screen.getByText('(2 files)')).toBeInTheDocument();
   });
 
   test('does not show upload button without uploadUrl', () => {
@@ -106,17 +107,18 @@ describe('ImageUploader', () => {
     expect(screen.queryByText('Upload')).not.toBeInTheDocument();
   });
 
-  test('clears files when initialImages is reset after upload', () => {
+  test('shows different initial images when initialImages prop changes', () => {
     const { rerender } = render(<ImageUploader initialImages={['https://example.com/image1.jpg']} />);
     
-    // Check that image is rendered
+    // Check that first image is rendered
     expect(screen.getByRole('img')).toBeInTheDocument();
+    expect(screen.getByRole('img')).toHaveAttribute('src', 'https://example.com/image1.jpg');
     
-    // Reset initialImages (simulating after upload completion)
-    rerender(<ImageUploader initialImages={[]} />);
+    // Change to different initialImages
+    rerender(<ImageUploader initialImages={['https://example.com/image2.jpg']} />);
     
-    // Check that images are cleared
-    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    // Check that new image is rendered
+    expect(screen.getByRole('img')).toHaveAttribute('src', 'https://example.com/image2.jpg');
   });
 
   test('shows drop zone in edit mode when files are less than maxFiles', () => {

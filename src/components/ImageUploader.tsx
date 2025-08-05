@@ -44,8 +44,10 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
   const [files, setFiles] = useState<ImageFile[]>([]);
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [currentFileToCrop, setCurrentFileToCrop] = useState<File | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [currentFileIndex, setCurrentFileIndex] = useState<number | null>(null);
   const dropZoneRef = useRef<DropZoneRef>(null);
+  const blobUrlsRef = useRef<Set<string>>(new Set());
 
   const { validateFile, validateFiles } = useFileValidation();
   const { uploadFiles } = useImageUpload();
@@ -64,28 +66,21 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
             isUploaded: true, // Mark initial images as uploaded
           };
         } else {
-          // For File objects
+          // For File objects, use blob URL like new files
+          const blobUrl = URL.createObjectURL(image);
+          blobUrlsRef.current.add(blobUrl);
           return {
             id: `initial-${index}`,
             file: image,
-            previewUrl: URL.createObjectURL(image),
+            previewUrl: blobUrl,
             isCropped: false,
             isUploaded: false,
           };
         }
       });
       setFiles(initialFiles);
-    } else if (initialImages.length === 0 && files.length > 0) {
-      // Clear files when initialImages is reset (e.g., after upload completion)
-      // Clean up blob URLs before clearing
-      files.forEach(file => {
-        if (file.previewUrl.startsWith('blob:')) {
-          URL.revokeObjectURL(file.previewUrl);
-        }
-      });
-      setFiles([]);
     }
-  }, [initialImages]); // Remove files dependency to prevent infinite loops
+  }, [initialImages]);
 
   const handleFilesSelected = useCallback((selectedFiles: FileList) => {
     if (disabled) return;
@@ -112,18 +107,23 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
     if (enableCrop && fileArray.length > 0) {
       const firstFile = fileArray[0];
       setCurrentFileToCrop(firstFile);
+      setCurrentImageUrl(null);
       setCurrentFileIndex(null);
       setIsCropModalOpen(true);
       onCropModalOpen?.(firstFile);
     } else {
       // Process files without cropping
-      const newFiles: ImageFile[] = fileArray.map((file, index) => ({
-        id: `${Date.now()}-${index}`,
-        file,
-        previewUrl: URL.createObjectURL(file),
-        isCropped: false,
-        isUploaded: false,
-      }));
+      const newFiles: ImageFile[] = fileArray.map((file, index) => {
+        const blobUrl = URL.createObjectURL(file);
+        blobUrlsRef.current.add(blobUrl);
+        return {
+          id: `${Date.now()}-${index}`,
+          file,
+          previewUrl: blobUrl,
+          isCropped: false,
+          isUploaded: false,
+        };
+      });
 
       const updatedFiles = [...files, ...newFiles];
       setFiles(updatedFiles);
@@ -132,12 +132,15 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
   }, [disabled, files, maxFileSize, maxFiles, acceptedTypes, enableCrop, validateFile, validateFiles, onError, onFilesChange, onCropModalOpen]);
 
   const handleCropSave = useCallback((croppedFile: File) => {
-    if (!currentFileToCrop) return;
+    if (!currentFileToCrop && !currentImageUrl) return;
 
+    const blobUrl = URL.createObjectURL(croppedFile);
+    blobUrlsRef.current.add(blobUrl);
+    
     const newFile: ImageFile = {
       id: `${Date.now()}`,
       file: croppedFile,
-      previewUrl: URL.createObjectURL(croppedFile),
+      previewUrl: blobUrl,
       isCropped: true,
       isUploaded: false,
     };
@@ -145,48 +148,75 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
     if (currentFileIndex !== null) {
       // Replacing an existing file
       const updatedFiles = [...files];
+      const oldFile = updatedFiles[currentFileIndex];
+      
       updatedFiles[currentFileIndex] = newFile;
       setFiles(updatedFiles);
       onFilesChange?.(updatedFiles.map(f => f.file));
-      onCropComplete?.(croppedFile, currentFileToCrop, currentFileIndex);
+      onCropComplete?.(croppedFile, currentFileToCrop || new File([], 'original.jpg', { type: 'image/jpeg' }), currentFileIndex);
+      
+      // Clean up old blob URL after state update, but only if it's different from the new one
+      if (oldFile && oldFile.previewUrl.startsWith('blob:') && oldFile.previewUrl !== newFile.previewUrl) {
+        setTimeout(() => {
+          blobUrlsRef.current.delete(oldFile.previewUrl);
+          URL.revokeObjectURL(oldFile.previewUrl);
+        }, 100);
+      }
     } else {
       // Adding a new file
       const updatedFiles = [...files, newFile];
       setFiles(updatedFiles);
       onFilesChange?.(updatedFiles.map(f => f.file));
-      onCropComplete?.(croppedFile, currentFileToCrop);
+      onCropComplete?.(croppedFile, currentFileToCrop || new File([], 'original.jpg', { type: 'image/jpeg' }));
     }
 
     setIsCropModalOpen(false);
     setCurrentFileToCrop(null);
+    setCurrentImageUrl(null);
     setCurrentFileIndex(null);
     onCropModalClose?.();
-  }, [currentFileToCrop, currentFileIndex, files, onFilesChange, onCropComplete, onCropModalClose]);
+  }, [currentFileToCrop, currentImageUrl, currentFileIndex, files, onFilesChange, onCropComplete, onCropModalClose]);
 
   const handleCropCancel = useCallback(() => {
     setIsCropModalOpen(false);
     setCurrentFileToCrop(null);
+    setCurrentImageUrl(null);
     setCurrentFileIndex(null);
     onCropModalClose?.();
   }, [onCropModalClose]);
 
   const handleRemoveFile = useCallback((index: number) => {
     const fileToRemove = files[index];
-    
-    // Only revoke blob URLs, not external URLs
-    if (fileToRemove.previewUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(fileToRemove.previewUrl);
-    }
-    
     const updatedFiles = files.filter((_, i) => i !== index);
+    
     setFiles(updatedFiles);
     onFilesChange?.(updatedFiles.map(f => f.file));
+    
+    // Clean up blob URL after state update with delay, only if it's a blob URL
+    if (fileToRemove && fileToRemove.previewUrl && fileToRemove.previewUrl.startsWith('blob:')) {
+      setTimeout(() => {
+        blobUrlsRef.current.delete(fileToRemove.previewUrl);
+        URL.revokeObjectURL(fileToRemove.previewUrl);
+      }, 100);
+    }
   }, [files, onFilesChange]);
 
   const handleEditFile = useCallback((file: ImageFile, index: number) => {
     if (!enableCrop) return;
     
-    setCurrentFileToCrop(file.file);
+    // Check if this is an initial image with URL string
+    const isInitialImage = file.isUploaded && !file.previewUrl.startsWith('blob:');
+    
+    if (isInitialImage) {
+      // This is an initial image with URL, pass the URL to CropModal
+      setCurrentFileToCrop(null);
+      setCurrentImageUrl(file.previewUrl);
+    } else {
+      // This is a regular file with blob URL or File object
+      setCurrentFileToCrop(file.file);
+      setCurrentImageUrl(null);
+    }
+    
     setCurrentFileIndex(index);
     setIsCropModalOpen(true);
     onCropModalOpen?.(file.file, index);
@@ -195,9 +225,22 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
   const handleUpload = useCallback(async () => {
     if (!uploadUrl || files.length === 0) return;
     
+    // Filter only files that are not uploaded yet (exclude initial images)
+    const filesToUpload = files.filter(file => !file.isUploaded);
+    
+    if (filesToUpload.length === 0) {
+      // No new files to upload, just return the existing files
+      const unuploadedFiles = files.filter(file => !file.isUploaded);
+      onUploadComplete?.({
+        unuploadedFiles: unuploadedFiles.map(f => f.file),
+        uploadResponse: null
+      });
+      return;
+    }
+    
     try {
       const response = await uploadFiles(
-        files.map(f => f.file),
+        filesToUpload.map(f => f.file),
         uploadUrl,
         {
           fieldName: uploadFieldName,
@@ -206,31 +249,35 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
         }
       );
       
-      // Mark files as uploaded
-      const updatedFiles = files.map(file => ({
-        ...file,
-        isUploaded: true,
-      }));
+      // Mark only the uploaded files as uploaded
+      const updatedFiles = files.map(file => {
+        const wasUploaded = filesToUpload.some(uploadedFile => uploadedFile.id === file.id);
+        return wasUploaded ? { ...file, isUploaded: true } : file;
+      });
       setFiles(updatedFiles);
       
-      onUploadComplete?.(response);
+      // Get remaining unuploaded files for the callback
+      const unuploadedFiles = updatedFiles.filter(file => !file.isUploaded);
+      
+      onUploadComplete?.({
+        unuploadedFiles: unuploadedFiles.map(f => f.file),
+        uploadResponse: response
+      });
     } catch (error) {
       onError?.(error instanceof Error ? error.message : 'Upload failed');
     }
   }, [uploadUrl, files, uploadFiles, uploadFieldName, multipleFileStrategy, onUploadProgress, onUploadComplete, onError]);
 
-  // Clean up object URLs on unmount
+  // Clean up object URLs only on unmount
   useEffect(() => {
-    const currentFiles = files;
     return () => {
-      // Clean up blob URLs on unmount
-      currentFiles.forEach(file => {
-        if (file.previewUrl.startsWith('blob:')) {
-          URL.revokeObjectURL(file.previewUrl);
-        }
+      // Clean up all tracked blob URLs on unmount
+      blobUrlsRef.current.forEach(url => {
+        URL.revokeObjectURL(url);
       });
+      blobUrlsRef.current.clear();
     };
-  }, [files]); // Update cleanup when files change
+  }, []); // Only run cleanup on unmount, not when files change
 
   return (
     <div className={`image-uploader ${className}`}>
@@ -256,20 +303,24 @@ export const ImageUploader: React.FC<ImageUploadProps> = ({
       )}
       
       {files.length > 0 && uploadUrl && showUploadButton && (
-        <div className="mt-4">
+        <div className="upload-button-container">
           <button
             onClick={handleUpload}
             disabled={files.length === 0}
-            className={uploadButtonClassName || "px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"}
+            className={uploadButtonClassName || "upload-button"}
           >
-            {uploadButtonText} {files.length > 1 ? `(${files.length} files)` : ''}
+            <span className="upload-button-text">{uploadButtonText}</span>
+            {files.length > 1 && (
+              <span className="upload-file-count">({files.length} files)</span>
+            )}
           </button>
         </div>
       )}
       
-      {isCropModalOpen && currentFileToCrop && (
+      {isCropModalOpen && (currentFileToCrop || currentImageUrl) && (
         <CropModal
-          file={currentFileToCrop}
+          file={currentFileToCrop || undefined}
+          imageUrl={currentImageUrl || undefined}
           onSave={handleCropSave}
           onCancel={handleCropCancel}
           aspectRatio={cropAspectRatio}

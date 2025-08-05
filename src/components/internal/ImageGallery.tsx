@@ -20,17 +20,28 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   if (files.length === 0) return null;
 
   return (
-    <div className="image-gallery">
-      {files.map((file, index) => (
-        <ImagePreview
-          key={file.id}
-          file={file}
-          onRemove={() => onRemove(index)}
-          onEdit={() => onEdit(file, index)}
-          showEditButton={showEditButton}
-          editButtonText={editButtonText}
-        />
-      ))}
+    <div 
+      className="image-gallery"
+      style={{
+        marginTop: '1rem',
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '1rem',
+        padding: '1rem',
+      }}
+    >
+      {files.map((file, index) => {
+        return (
+          <ImagePreview
+            key={file.id}
+            file={file}
+            onRemove={() => onRemove(index)}
+            onEdit={() => onEdit(file, index)}
+            showEditButton={showEditButton}
+            editButtonText={editButtonText}
+          />
+        );
+      })}
     </div>
   );
 };
